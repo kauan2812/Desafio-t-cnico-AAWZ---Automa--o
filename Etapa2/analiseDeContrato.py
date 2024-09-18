@@ -9,8 +9,20 @@ def readDocx(filePath):
         full_text.append(para.text)
     return "\n".join(full_text)
 
-def extractPartnersInfo(text):
-    pattern = r"(\d+\.\s)([\w\s]+),.*detentor[oa] de (\d+) cotas"
+def extractFemalePartnersInfo(text):
+    pattern = r"(\d+\.\s)([\w\s]+),.*detentor[a] de (\d+) cotas"
+    matches = re.findall(pattern, text)
+
+    partners = []
+    for match in matches:
+        name = match[1].strip()
+        quotas = int(match[2])
+        partners.append({'Nome': name, 'Cotas': quotas})
+    
+    return partners
+  
+def extractMalePartnersInfo(text):
+    pattern = r"(\d+\.\s)([\w\s]+),.*detentor de (\d+) cotas"
     matches = re.findall(pattern, text)
 
     partners = []
@@ -25,8 +37,14 @@ def analiseDeContrato(filePath):
   
   text = readDocx(filePath)
 
-  partnersInfo = extractPartnersInfo(text)
+  femalePartnersInfo = extractFemalePartnersInfo(text)
+  malePartnersInfo = extractMalePartnersInfo(text)
 
-  df = pd.DataFrame(partnersInfo)
-
+  dff = pd.DataFrame(femalePartnersInfo)
+  dfm = pd.DataFrame(malePartnersInfo)
+  
+  df = pd.concat([dff, dfm])
+  
   return df
+
+print(analiseDeContrato('Partnership.docx'))
